@@ -151,8 +151,8 @@ function channel_monitor:ADDON_LOADED()
     self.main_frame = main_frame
 end
 
-SLASH_channel_monitor1, SLASH_channel_monitor2 = '/channel_monitor', '/cm'
-function SlashCmdList.channel_monitor()
+SLASH_CHANNEL_MONITOR1, SLASH_CHANNEL_MONITOR2 = '/channel_monitor', '/cm'
+function SlashCmdList.CHANNEL_MONITOR()
 	channel_monitor_on = not channel_monitor_on
 	if channel_monitor_on then
 		channel_monitor.main_frame:Show()
