@@ -9,29 +9,23 @@ channel_monitor_on = true
 channel_monitor_filter = ''
 
 function channel_monitor:match(message)
-	for clause in string.gfind(channel_monitor_filter, '[^,]+') do
-		local match
-		for keyword in string.gfind(clause, '[^/]+') do
-			keyword = gsub(keyword, '^%s*', '')
-			keyword = gsub(keyword, '%s*$', '')
-			local position = 1
-			while true do
-				local start_position, end_position = strfind(strupper(message), strupper(keyword), position, true)
-				if start_position then
-					if (start_position == 1 or not strfind(strsub(message, start_position - 1, start_position - 1), '%w')) and (end_position == strlen(message) or not strfind(strsub(message, end_position + 1, end_position + 1), '%w')) then
-						match = true
-					end
-					position = end_position
-				else
-					break
+	for keyword in string.gfind(channel_monitor_filter, '[^,]+') do
+		keyword = gsub(keyword, '^%s*', '')
+		keyword = gsub(keyword, '%s*$', '')
+		local position = 1
+		while true do
+			local start_position, end_position = strfind(strupper(message), strupper(keyword), position, true)
+			if start_position then
+				if (start_position == 1 or not strfind(strsub(message, start_position - 1, start_position - 1), '%w')) and (end_position == strlen(message) or not strfind(strsub(message, end_position + 1, end_position + 1), '%w')) then
+					return true
 				end
+				position = end_position + 1
+			else
+				break
 			end
 		end
-		if not match then
-			return false
-		end
 	end
-	return true
+	return false
 end
 
 function channel_monitor:CHAT_MSG_CHANNEL()
@@ -74,11 +68,12 @@ function channel_monitor:ADDON_LOADED()
 	main_frame:SetPoint('CENTER', channel_monitor_x, channel_monitor_y)
 	main_frame:SetWidth(300)
 	main_frame:SetHeight(93)
-	main_frame:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8', edgeSize=2})
-    main_frame:SetBackdropColor(1,1,1,.2)
-    main_frame:SetBackdropBorderColor(1,1,1,.2)
+	main_frame:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8', edgeSize=1})
+    main_frame:SetBackdropColor(1, 1, 1, .1)
+    main_frame:SetBackdropBorderColor(1, 1, 1, .5)
 	main_frame:SetMovable(true)
 	main_frame:SetClampedToScreen(true)
+	main_frame:SetToplevel(true)
 	main_frame:EnableMouse(true)
 	main_frame:RegisterForDrag('LeftButton')
 	main_frame:SetScript('OnDragStart', function()
@@ -88,7 +83,7 @@ function channel_monitor:ADDON_LOADED()
 		this:StopMovingOrSizing()
 		local x, y = this:GetCenter()
 		local ux, uy = UIParent:GetCenter()
-		channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + 0.5)
+		channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + .5)
 	end)
 
     local editbox = CreateFrame('EditBox', nil, main_frame)
@@ -101,8 +96,8 @@ function channel_monitor:ADDON_LOADED()
     editbox:SetHeight(19)
     editbox:SetFont([[Fonts\ARIALN.TTF]], 15)
     editbox:SetShadowColor(0, 0, 0, 0)
-    editbox:SetBackdrop({edgeFile='Interface\\Buttons\\WHITE8X8', edgeSize=2})
-    editbox:SetBackdropBorderColor(1,1,1,.2)
+    editbox:SetBackdrop({edgeFile='Interface\\Buttons\\WHITE8X8', edgeSize=1})
+    editbox:SetBackdropBorderColor(1, 1, 1, .5)
     editbox:SetText(channel_monitor_filter)
     editbox:SetScript('OnTextChanged', function() channel_monitor_filter = this:GetText() end)
     editbox:SetScript('OnEditFocusLost', function()
