@@ -106,6 +106,9 @@ function channel_monitor:ADDON_LOADED()
     editbox:SetScript('OnEscapePressed', function()
         this:ClearFocus()
     end)
+    editbox:SetScript('OnEnterPressed', function()
+        this:ClearFocus()
+    end)
     do
         local last_time, last_x, last_y
 
