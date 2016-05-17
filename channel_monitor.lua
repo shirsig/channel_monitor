@@ -66,14 +66,10 @@ function channel_monitor:ADDON_LOADED()
 	main_frame:SetHeight(115)
 	main_frame:SetBackdrop({
 		bgFile=[[Interface\ChatFrame\ChatFrameBackground]],
-		edgeFile=[[Interface\Tooltips\UI-Tooltip-Border]],
-		edgeSize=16,
-		insets = { left = 5, right = 5, top = 5, bottom = 5 },
 		tile = true,
 		tileSize = 16,
 	})
     main_frame:SetBackdropColor(0, 0, 0, .45)
-    -- main_frame:SetBackdropBorderColor(1, 1, 1, .5)
 	main_frame:SetMovable(true)
 	main_frame:SetClampedToScreen(true)
 	main_frame:SetToplevel(true)
@@ -88,8 +84,19 @@ function channel_monitor:ADDON_LOADED()
 		local ux, uy = UIParent:GetCenter()
 		channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + .5)
 	end)
+	main_frame:SetScript('OnUpdate', function()
+		if MouseIsOver(this) then
+			this.editbox:SetAlpha(1)
+    		this:SetBackdropColor(0, 0, 0, .45)
+		else
+			this.editbox:ClearFocus()
+			this.editbox:SetAlpha(0)
+    		this:SetBackdropColor(0, 0, 0, 0)
+		end
+	end)
 
     local editbox = CreateFrame('EditBox', nil, main_frame)
+    main_frame.editbox = editbox
 	editbox:SetPoint('TOP', 0, -10)
 	editbox:SetPoint('LEFT', 10, 0)
 	editbox:SetPoint('RIGHT', -10, 0)
