@@ -46,7 +46,9 @@ function channel_monitor:CHAT_MSG_CHANNEL()
 			language = ''
 		end
 
-		local body = format(TEXT(getglobal('CHAT_CHANNEL_GET'))..language..arg1, flag..'|Hplayer:'..arg2..'|h['..arg2..']|h')
+		local timestamp = '|cffffa900'..date('%H:%M')..'|r '
+
+		local body = timestamp..format(TEXT(getglobal('CHAT_CHANNEL_GET'))..language..arg1, flag..'|Hplayer:'..arg2..'|h['..arg2..']|h')
 
 		local info = ChatTypeInfo['CHANNEL']
 		self.message_frame:AddMessage(body, info.r, info.g, info.b, info.id)
@@ -74,6 +76,10 @@ function channel_monitor:ADDON_LOADED()
 	main_frame:SetClampedToScreen(true)
 	main_frame:SetToplevel(true)
 	main_frame:EnableMouse(true)
+	main_frame:RegisterForClicks('RightButton')
+	main_frame:SetScript('OnClick', function()
+		this.message_frame:ScrollToBottom()
+	end)
 	main_frame:RegisterForDrag('LeftButton')
 	main_frame:SetScript('OnDragStart', function()
 		this:StartMoving()
@@ -142,7 +148,8 @@ function channel_monitor:ADDON_LOADED()
     end
 
 	local message_frame = CreateFrame('ScrollingMessageFrame', nil, main_frame)
-	message_frame:SetFontObject(GameFontNormalLarge)
+	main_frame.message_frame = message_frame
+	message_frame:SetFontObject(GameFontRedLarge)
 	message_frame:SetJustifyH('LEFT')
 	message_frame:SetPoint('TOP', editbox, 'BOTTOM')
 	message_frame:SetPoint('BOTTOM', 0, 2)
@@ -152,7 +159,7 @@ function channel_monitor:ADDON_LOADED()
 	message_frame:SetScript('OnHyperlinkLeave', ChatFrame_OnHyperlinkHide)
 	message_frame:EnableMouseWheel(true)
 	message_frame:SetScript('OnMouseWheel', function() if arg1 == 1 then this:ScrollUp() elseif arg1 == -1 then this:ScrollDown() end end)
-	-- message_frame:SetFading(false)
+	message_frame:SetFadeDuration(60)
 
     if not channel_monitor_on then
     	main_frame:Hide()
