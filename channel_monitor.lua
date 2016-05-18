@@ -82,13 +82,17 @@ function channel_monitor:ADDON_LOADED()
 		this:StopMovingOrSizing()
 		local x, y = this:GetCenter()
 		local ux, uy = UIParent:GetCenter()
-		channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + .5)
+		channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + .7)
 	end)
 	main_frame:SetScript('OnUpdate', function()
 		if MouseIsOver(this) then
-			this.editbox:SetAlpha(1)
-    		this:SetBackdropColor(0, 0, 0, .45)
+			this.time_entered = this.time_entered or GetTime()
+			if GetTime() - this.time_entered > .5 then
+				this.editbox:SetAlpha(1)
+	    		this:SetBackdropColor(0, 0, 0, .45)
+    		end
 		else
+			this.time_entered = nil
 			this.editbox:ClearFocus()
 			this.editbox:SetAlpha(0)
     		this:SetBackdropColor(0, 0, 0, 0)
@@ -148,7 +152,7 @@ function channel_monitor:ADDON_LOADED()
 	message_frame:SetScript('OnHyperlinkLeave', ChatFrame_OnHyperlinkHide)
 	message_frame:EnableMouseWheel(true)
 	message_frame:SetScript('OnMouseWheel', function() if arg1 == 1 then this:ScrollUp() elseif arg1 == -1 then this:ScrollDown() end end)
-	message_frame:SetFading(false)
+	-- message_frame:SetFading(false)
 
     if not channel_monitor_on then
     	main_frame:Hide()
