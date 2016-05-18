@@ -62,8 +62,8 @@ function channel_monitor:ADDON_LOADED()
 
 	local main_frame = CreateFrame('Frame', nil, UIParent)
 	main_frame:SetPoint('CENTER', channel_monitor_x, channel_monitor_y)
-	main_frame:SetWidth(300)
-	main_frame:SetHeight(115)
+	main_frame:SetWidth(350)
+	main_frame:SetHeight(120)
 	main_frame:SetBackdrop({
 		bgFile=[[Interface\ChatFrame\ChatFrameBackground]],
 		tile = true,
@@ -97,9 +97,9 @@ function channel_monitor:ADDON_LOADED()
 
     local editbox = CreateFrame('EditBox', nil, main_frame)
     main_frame.editbox = editbox
-	editbox:SetPoint('TOP', 0, -10)
-	editbox:SetPoint('LEFT', 10, 0)
-	editbox:SetPoint('RIGHT', -10, 0)
+	editbox:SetPoint('TOP', 0, -2)
+	editbox:SetPoint('LEFT', 2, 0)
+	editbox:SetPoint('RIGHT', -2, 0)
     editbox:SetAutoFocus(false)
     editbox:SetTextInsets(0, 0, 3, 3)
     editbox:SetMaxLetters(256)
@@ -138,12 +138,12 @@ function channel_monitor:ADDON_LOADED()
     end
 
 	local message_frame = CreateFrame('ScrollingMessageFrame', nil, main_frame)
-	message_frame:SetFontObject(GameFontNormal)
+	message_frame:SetFontObject(GameFontNormalLarge)
 	message_frame:SetJustifyH('LEFT')
 	message_frame:SetPoint('TOP', editbox, 'BOTTOM')
-	message_frame:SetPoint('BOTTOM', 0, 10)
-	message_frame:SetPoint('LEFT', 9, 0)
-	message_frame:SetPoint('RIGHT', -9, 0)
+	message_frame:SetPoint('BOTTOM', 0, 2)
+	message_frame:SetPoint('LEFT', 0, 0)
+	message_frame:SetPoint('RIGHT', 0, 0)
 	message_frame:SetScript('OnHyperlinkClick', function() ChatFrame_OnHyperlinkShow(arg1, arg2, arg3) end)
 	message_frame:SetScript('OnHyperlinkLeave', ChatFrame_OnHyperlinkHide)
 	message_frame:EnableMouseWheel(true)
