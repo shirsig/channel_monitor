@@ -29,7 +29,7 @@ function channel_monitor:match(message)
 end
 
 function channel_monitor:CHAT_MSG_CHANNEL()
-	if channel_monitor_on and self:match(arg1) then
+	if channel_monitor_on and self:match(arg1) and arg2 ~= UnitName('player') then
 		arg1 = gsub(arg1, "%%", "%%%%")
 
 		local flag
