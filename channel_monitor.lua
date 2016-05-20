@@ -92,12 +92,14 @@ function channel_monitor:ADDON_LOADED()
 			if GetTime() - this.time_entered > .5 then
 				this.editbox:SetAlpha(1)
 	    		this:SetBackdropColor(0, 0, 0, .45)
+	    		main_frame:EnableMouse(true)
     		end
 		else
 			this.time_entered = nil
 			this.editbox:ClearFocus()
 			this.editbox:SetAlpha(0)
     		this:SetBackdropColor(0, 0, 0, 0)
+    		this:EnableMouse(false)
 		end
 	end)
 
