@@ -63,6 +63,7 @@ function channel_monitor:ADDON_LOADED()
 	self:RegisterEvent('CHAT_MSG_CHANNEL')
 
 	local main_frame = CreateFrame('Frame', nil, UIParent)
+	self.main_frame = main_frame
 	main_frame:SetPoint('CENTER', channel_monitor_x, channel_monitor_y)
 	main_frame:SetWidth(350)
 	main_frame:SetHeight(120)
@@ -86,21 +87,22 @@ function channel_monitor:ADDON_LOADED()
 		local ux, uy = UIParent:GetCenter()
 		channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + .7)
 	end)
+	main_frame.last_activity = GetTime()
 	main_frame:SetScript('OnUpdate', function()
 		if MouseIsOver(this) then
 			this.time_entered = this.time_entered or GetTime()
 			if GetTime() - this.time_entered > .5 then
-				this.editbox:SetAlpha(1)
-	    		this:SetBackdropColor(0, 0, 0, .45)
-	    		main_frame:EnableMouse(true)
+				self:show()
     		end
 		else
 			this.time_entered = nil
-			this.editbox:ClearFocus()
-			this.editbox:SetAlpha(0)
-    		this:SetBackdropColor(0, 0, 0, 0)
-    		this:EnableMouse(false)
+			if GetTime() - this.last_activity > 1.5 then
+				self:hide()
+			end
 		end
+	end)
+	main_frame:SetScript('OnLeave', function()
+		this.last_activity = GetTime()
 	end)
 
     local editbox = CreateFrame('EditBox', nil, main_frame)
@@ -116,7 +118,11 @@ function channel_monitor:ADDON_LOADED()
     editbox:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8'})
     editbox:SetBackdropColor(1, 1, 1, .2)
     editbox:SetText(channel_monitor_filter)
-    editbox:SetScript('OnTextChanged', function() channel_monitor_filter = this:GetText() end)
+    editbox:SetScript('OnTextChanged', function()
+    	main_frame.last_activity = GetTime()
+    	self:show()
+    	channel_monitor_filter = this:GetText()
+    end)
     editbox:SetScript('OnEditFocusLost', function()
         this:HighlightText(0, 0)
     end)
@@ -165,6 +171,18 @@ function channel_monitor:ADDON_LOADED()
 
 	self.message_frame = message_frame
     self.main_frame = main_frame
+end
+
+function channel_monitor:show()
+	self.main_frame.editbox:SetAlpha(1)
+	self.main_frame:SetBackdropColor(0, 0, 0, .45)
+	self.main_frame:EnableMouse(true)
+end
+
+function channel_monitor:hide()
+	self.main_frame.editbox:SetAlpha(0)
+	self.main_frame:SetBackdropColor(0, 0, 0, 0)
+	self.main_frame:EnableMouse(false)
 end
 
 SLASH_CHANNEL_MONITOR1, SLASH_CHANNEL_MONITOR2 = '/channel_monitor', '/cm'
