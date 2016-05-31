@@ -12,16 +12,18 @@ function channel_monitor:match(message)
 	for keyword in string.gfind(channel_monitor_filter, '[^,]+') do
 		keyword = gsub(keyword, '^%s*', '')
 		keyword = gsub(keyword, '%s*$', '')
-		local position = 1
-		while true do
-			local start_position, end_position = strfind(strupper(message), strupper(keyword), position, true)
-			if start_position then
-				if (start_position == 1 or not strfind(strsub(message, start_position - 1, start_position - 1), '%w')) and (end_position == strlen(message) or not strfind(strsub(message, end_position + 1, end_position + 1), '%w')) then
-					return true
+		if strlen(keyword) > 0 then
+			local position = 1
+			while true do
+				local start_position, end_position = strfind(strupper(message), strupper(keyword), position, true)
+				if start_position then
+					if (start_position == 1 or not strfind(strsub(message, start_position - 1, start_position - 1), '%w')) and (end_position == strlen(message) or not strfind(strsub(message, end_position + 1, end_position + 1), '%w')) then
+						return true
+					end
+					position = end_position + 1
+				else
+					break
 				end
-				position = end_position + 1
-			else
-				break
 			end
 		end
 	end
