@@ -23,17 +23,18 @@ function channel_monitor:match(message)
 
 		if strsub(keyword, 1, 1) == '(' then
 			open_bracket = true
-			keyword = strsub(keyword, 2)
+			keyword = gsub(keyword, '^%(%s*', '')
 		end
 		if strsub(keyword, -1, -1) == ')' then
 			open_bracket = false
 			keyword = strsub(keyword, 1, -2)
+			keyword = gsub(keyword, '%)%s*$', '')
 		end
 
 		local negated
 		if strsub(keyword, 1, 1) == '!' then
 			negated = true
-			keyword = strsub(keyword, 2)
+			keyword = gsub(keyword, '^!%s*', '')
 		end
 
 		local match = self:find_keyword(message, keyword)
