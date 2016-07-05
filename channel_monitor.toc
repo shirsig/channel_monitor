@@ -1,5 +1,5 @@
 ## Interface: 11200
 ## Title: channel_monitor
 ## Author: shirsig
-## SavedVariablesPerCharacter: channel_monitor_x, channel_monitor_y, channel_monitor_on, channel_monitor_filter
+## SavedVariablesPerCharacter: channel_monitor_x, channel_monitor_y, channel_monitor_dx, channel_monitor_dy, channel_monitor_on, channel_monitor_locked, channel_monitor_filter
 channel_monitor.lua

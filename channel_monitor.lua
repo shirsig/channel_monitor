@@ -5,29 +5,65 @@ end)
 channel_monitor:RegisterEvent('ADDON_LOADED')
 
 channel_monitor_x, channel_monitor_y = 0, 0
+channel_monitor_dx, channel_monitor_dy = 350, 120
+channel_monitor_locked = false
 channel_monitor_on = true
 channel_monitor_filter = ''
 
 function channel_monitor:match(message)
+	local open_bracket
+	local condition
 	for keyword in string.gfind(channel_monitor_filter, '[^,]+') do
 		keyword = gsub(keyword, '^%s*', '')
 		keyword = gsub(keyword, '%s*$', '')
-		if strlen(keyword) > 0 then
-			local position = 1
-			while true do
-				local start_position, end_position = strfind(strupper(message), strupper(keyword), position, true)
-				if start_position then
-					if (start_position == 1 or not strfind(strsub(message, start_position - 1, start_position - 1), '%w')) and (end_position == strlen(message) or not strfind(strsub(message, end_position + 1, end_position + 1), '%w')) then
-						return true
-					end
-					position = end_position + 1
-				else
-					break
-				end
-			end
+
+		if not open_bracket then
+			condition = true
+		end
+
+		if strsub(keyword, 1, 1) == '(' then
+			open_bracket = true
+			keyword = strsub(keyword, 2)
+		end
+		if strsub(keyword, -1, -1) == ')' then
+			open_bracket = false
+			keyword = strsub(keyword, 1, -2)
+		end
+
+		local negated
+		if strsub(keyword, 1, 1) == '!' then
+			negated = true
+			keyword = strsub(keyword, 2)
+		end
+
+		local match = self:find_keyword(message, keyword)
+		if negated then
+			match = not match
+		end
+
+		condition = condition and match
+		if not open_bracket and condition then
+			return true
 		end
 	end
 	return false
+end
+
+function channel_monitor:find_keyword(message, keyword)
+	if strlen(keyword) > 0 then
+		local position = 1
+		while true do
+			local start_position, end_position = strfind(strupper(message), strupper(keyword), position, true)
+			if start_position then
+				if (start_position == 1 or not strfind(strsub(message, start_position - 1, start_position - 1), '%w')) and (end_position == strlen(message) or not strfind(strsub(message, end_position + 1, end_position + 1), '%w')) then
+					return true
+				end
+				position = end_position + 1
+			else
+				break
+			end
+		end
+	end
 end
 
 function channel_monitor:CHAT_MSG_CHANNEL()
@@ -57,9 +93,34 @@ function channel_monitor:CHAT_MSG_CHANNEL()
 	end
 end
 
+function channel_monitor:save_frame()
+	self.main_frame:StopMovingOrSizing()
+	local x, y = self.main_frame:GetCenter()
+	local ux, uy = UIParent:GetCenter()
+	channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + .7)
+	channel_monitor_dx, channel_monitor_dy = self.main_frame:GetWidth(), self.main_frame:GetHeight()
+end
+
 function channel_monitor:ADDON_LOADED()
 	if arg1 ~= 'channel_monitor' then
 		return
+	end
+
+	SLASH_CHANNEL_MONITOR1, SLASH_CHANNEL_MONITOR2 = '/channel_monitor', '/cm'
+	function SlashCmdList.CHANNEL_MONITOR(arg)
+		if arg == 'on' then
+			channel_monitor_on = true
+			channel_monitor.main_frame:Show()
+		elseif arg == 'off' then
+			channel_monitor_on = false
+			channel_monitor.main_frame:Hide()
+		elseif arg == 'lock' then
+			channel_monitor_locked = true
+			self:hide()
+		elseif arg == 'unlock' then
+			channel_monitor_locked = false
+			self:show()
+		end
 	end
 
 	self:RegisterEvent('CHAT_MSG_CHANNEL')
@@ -67,8 +128,8 @@ function channel_monitor:ADDON_LOADED()
 	local main_frame = CreateFrame('Frame', nil, UIParent)
 	self.main_frame = main_frame
 	main_frame:SetPoint('CENTER', channel_monitor_x, channel_monitor_y)
-	main_frame:SetWidth(350)
-	main_frame:SetHeight(120)
+	main_frame:SetWidth(channel_monitor_dx)
+	main_frame:SetHeight(channel_monitor_dy)
 	main_frame:SetBackdrop({
 		bgFile=[[Interface\ChatFrame\ChatFrameBackground]],
 		tile = true,
@@ -76,35 +137,22 @@ function channel_monitor:ADDON_LOADED()
 	})
     main_frame:SetBackdropColor(0, 0, 0, .45)
 	main_frame:SetMovable(true)
+	main_frame:SetResizable(true)
+	main_frame:SetMinResize(350, 120)
+	main_frame:SetMaxResize(700, 360)
 	main_frame:SetClampedToScreen(true)
 	main_frame:SetToplevel(true)
 	main_frame:EnableMouse(true)
-	main_frame:RegisterForDrag('LeftButton')
+	main_frame:RegisterForDrag('LeftButton', 'RightButton')
 	main_frame:SetScript('OnDragStart', function()
-		this:StartMoving()
-	end)
-	main_frame:SetScript('OnDragStop', function()
-		this:StopMovingOrSizing()
-		local x, y = this:GetCenter()
-		local ux, uy = UIParent:GetCenter()
-		channel_monitor_x, channel_monitor_y = floor(x - ux + 0.5), floor(y - uy + .7)
-	end)
-	main_frame.last_activity = GetTime()
-	main_frame:SetScript('OnUpdate', function()
-		if MouseIsOver(this) then
-			this.time_entered = this.time_entered or GetTime()
-			if GetTime() - this.time_entered > .5 then
-				self:show()
-    		end
-		else
-			this.time_entered = nil
-			if GetTime() - this.last_activity > 1.5 then
-				self:hide()
-			end
+		if arg1 == 'LeftButton' then
+			this:StartMoving()
+		elseif arg1 == 'RightButton' then
+			this:StartSizing()
 		end
 	end)
-	main_frame:SetScript('OnLeave', function()
-		this.last_activity = GetTime()
+	main_frame:SetScript('OnDragStop', function()
+		self:save_frame()
 	end)
 
     local editbox = CreateFrame('EditBox', nil, main_frame)
@@ -121,8 +169,6 @@ function channel_monitor:ADDON_LOADED()
     editbox:SetBackdropColor(1, 1, 1, .2)
     editbox:SetText(channel_monitor_filter)
     editbox:SetScript('OnTextChanged', function()
-    	main_frame.last_activity = GetTime()
-    	self:show()
     	channel_monitor_filter = this:GetText()
     end)
     editbox:SetScript('OnEditFocusLost', function()
@@ -136,11 +182,9 @@ function channel_monitor:ADDON_LOADED()
     end)
     do
         local last_time, last_x, last_y
-
         editbox:SetScript('OnEditFocusGained', function()
             this:HighlightText()
         end)
-
         editbox:SetScript('OnMouseUp', function()
             local x, y = GetCursorPosition()
             if last_time and last_time > GetTime() - .5 and abs(x - last_x) < 10 and abs(y - last_y) < 10 then
@@ -171,6 +215,10 @@ function channel_monitor:ADDON_LOADED()
     	main_frame:Hide()
 	end
 
+	if channel_monitor_locked then
+		self:hide()
+	end
+
 	self.message_frame = message_frame
     self.main_frame = main_frame
 end
@@ -185,14 +233,4 @@ function channel_monitor:hide()
 	self.main_frame.editbox:SetAlpha(0)
 	self.main_frame:SetBackdropColor(0, 0, 0, 0)
 	self.main_frame:EnableMouse(false)
-end
-
-SLASH_CHANNEL_MONITOR1, SLASH_CHANNEL_MONITOR2 = '/channel_monitor', '/cm'
-function SlashCmdList.CHANNEL_MONITOR()
-	channel_monitor_on = not channel_monitor_on
-	if channel_monitor_on then
-		channel_monitor.main_frame:Show()
-	else
-		channel_monitor.main_frame:Hide()
-	end
 end
