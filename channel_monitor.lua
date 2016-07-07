@@ -144,12 +144,12 @@ function channel_monitor:ADDON_LOADED()
 	main_frame:SetClampedToScreen(true)
 	main_frame:SetToplevel(true)
 	main_frame:EnableMouse(true)
-	main_frame:RegisterForDrag('LeftButton', 'RightButton')
+	main_frame:RegisterForDrag('LeftButton')
 	main_frame:SetScript('OnDragStart', function()
-		if arg1 == 'LeftButton' then
-			this:StartMoving()
-		elseif arg1 == 'RightButton' then
+		if IsAltKeyDown() then
 			this:StartSizing()
+		else
+			this:StartMoving()
 		end
 	end)
 	main_frame:SetScript('OnDragStop', function()
