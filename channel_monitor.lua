@@ -228,10 +228,12 @@ function channel_monitor:show()
 	self.main_frame.editbox:SetAlpha(1)
 	self.main_frame:SetBackdropColor(0, 0, 0, .45)
 	self.main_frame:EnableMouse(true)
+	self.main_frame.editbox:EnableMouse(true)
 end
 
 function channel_monitor:hide()
 	self.main_frame.editbox:SetAlpha(0)
 	self.main_frame:SetBackdropColor(0, 0, 0, 0)
 	self.main_frame:EnableMouse(false)
+	self.main_frame.editbox:EnableMouse(false)
 end
